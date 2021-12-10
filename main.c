@@ -27,8 +27,11 @@ Image *img;
 
 void display_CB()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
-
+	int i;
+	int x_coord[5] = {0, 250, 250, 125, 500};
+	int y_coord[5] = {0, 120, 330, 400, 500};
+	for (i = 0; i < 4; i++)
+		I_bresenham(img, x_coord[i], y_coord[i], x_coord[i + 1], y_coord[i + 1]);
 	I_draw(img);
 
 	glutSwapBuffers();
