@@ -255,25 +255,22 @@ void I_draw(Image *img)
 	glEnd();
 }
 
-// polygone *P_nouveau()
-// {
-// 	polygone *p = (polygone *)malloc(sizeof(polygone));
-// 	p->nb_sommets = 0;
-// 	return p;
-// }
+polygone *P_nouveau()
+{
+	polygone *p = (polygone *)malloc(sizeof(polygone));
+	p->nb_sommets = 0;
+	p->drawn_sommets = 0;
+	return p;
+}
 
-// void P_nouveauSommet(polygone *p, int x, int y)
-// {
-// 	point pt;
-// 	pt.x = x;
-// 	pt.y = y;
-// 	p->sommets[p->nb_sommets] = pt;
-// 	p->nb_sommets++;
-// }
-
-// void P_draw(polygone *p){
-
-// }
+void P_nouveauSommet(polygone *p, int x, int y)
+{
+	point pt;
+	pt.x = x;
+	pt.y = y;
+	p->sommets[p->nb_sommets] = pt;
+	p->nb_sommets++;
+}
 
 void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *xB_1o, int *yB_1o)
 {
@@ -298,7 +295,7 @@ void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *x
 		yA_1q = -yA;
 		yB_1q = -yB;
 	}
-	if ((xB_1q - xA_1q) > (yB_1q - yB_1q))
+	if (fabs(xB - xA) > fabs(yB - yA))
 	{
 		*xA_1o = xA_1q;
 		*xB_1o = xB_1q;
@@ -317,7 +314,7 @@ void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *x
 void FromFirstOctan(int xA, int yA, int xB, int yB, int x_1o, int y_1o, int *x, int *y)
 {
 	int x_1q, y_1q;
-	if (fabs((xB - xA)) > fabs((yB - yA)))
+	if (fabs(xB - xA) > fabs(yB - yA))
 	{
 		x_1q = x_1o;
 		y_1q = y_1o;
@@ -339,23 +336,25 @@ void FromFirstOctan(int xA, int yA, int xB, int yB, int x_1o, int y_1o, int *x, 
 
 void I_bresenham(Image *img, int xA, int yA, int xB, int yB)
 {
+	Color c = img->_current_color;
 	int xAo, yAo, xBo, yBo, x, y;
 	ToFirstOctan(xA, yA, xB, yB, &xAo, &yAo, &xBo, &yBo);
-	Color white = C_new(255, 255, 255);
 	int i;
 	int j = yAo;
 	int deltaX = xBo - xAo;
 	int deltaY = yBo - yAo;
-	int critere = deltaX;
+	int incrd1 = 2 * deltaY;
+	int incrd2 = 2 * (deltaY - deltaX);
+	int critere = 2 * deltaY - deltaX;
 	for (i = xAo; i < xBo; i++)
 	{
 		FromFirstOctan(xA, yA, xB, yB, i, j, &x, &y);
-		I_plotColor(img, x, y, white);
-		if (critere > 0)
-			critere = critere - 2 * deltaY;
+		I_plotColor(img, x, y, c);
+		if (critere < 0)
+			critere += incrd1;
 		else
 		{
-			critere = critere + 2 * (deltaX - deltaY);
+			critere += incrd2;
 			j++;
 		}
 	}

@@ -17,6 +17,8 @@
 #include "Image.h"
 
 Image *img;
+polygone *p;
+int ouvert;
 
 //------------------------------------------------------------------
 //	C'est le display callback. A chaque fois qu'il faut
@@ -27,11 +29,18 @@ Image *img;
 
 void display_CB()
 {
+	Color white = C_new(255, 255, 255);
+	img->_current_color = white;
 	int i;
-	int x_coord[5] = {0, 250, 250, 125, 500};
-	int y_coord[5] = {0, 120, 330, 400, 500};
-	for (i = 0; i < 4; i++)
-		I_bresenham(img, x_coord[i], y_coord[i], x_coord[i + 1], y_coord[i + 1]);
+	for (i = p->drawn_sommets; i < p->nb_sommets - 1; i++)
+	{
+		int xA = p->sommets[i].x;
+		int yA = p->sommets[i].y;
+		int xB = p->sommets[i + 1].x;
+		int yB = p->sommets[i + 1].y;
+		I_bresenham(img, xA, yA, xB, yB);
+		p->drawn_sommets++;
+	}
 	I_draw(img);
 
 	glutSwapBuffers();
@@ -46,8 +55,10 @@ void display_CB()
 void mouse_CB(int button, int state, int x, int y)
 {
 	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+	{
 		I_focusPoint(img, x, img->_height - y);
-
+		P_nouveauSommet(p, x, y);
+	}
 	glutPostRedisplay();
 }
 
@@ -72,6 +83,32 @@ void keyboard_CB(unsigned char key, int x, int y)
 		break;
 	case 'i':
 		I_zoomInit(img);
+		break;
+	case 'c':
+		if (ouvert)
+		{
+			ouvert = 0;
+			Color black = C_new(0, 0, 0);
+			img->_current_color = black;
+			int i = p->drawn_sommets;
+			int xA = p->sommets[i].x;
+			int yA = p->sommets[i].y;
+			int xB = p->sommets[0].x;
+			int yB = p->sommets[0].y;
+			I_bresenham(img, xA, yA, xB, yB);
+		}
+		else
+		{
+			ouvert = 1;
+			Color white = C_new(255, 255, 255);
+			img->_current_color = white;
+			int i = p->drawn_sommets;
+			int xA = p->sommets[i].x;
+			int yA = p->sommets[i].y;
+			int xB = p->sommets[0].x;
+			int yB = p->sommets[0].y;
+			I_bresenham(img, xA, yA, xB, yB);
+		}
 		break;
 	default:
 		fprintf(stderr, "keyboard_CB : %d : unknown key.\n", key);
@@ -139,6 +176,8 @@ int main(int argc, char **argv)
 			I_fill(img, noir);
 		}
 		int windowPosX = 100, windowPosY = 100;
+		p = P_nouveau();
+		ouvert = 0;
 
 		glutInitWindowSize(largeur, hauteur);
 		glutInitWindowPosition(windowPosX, windowPosY);
@@ -153,7 +192,7 @@ int main(int argc, char **argv)
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		glOrtho(0, largeur, 0, hauteur, -1, 1);
+		glOrtho(0, largeur, hauteur, 0, -1, 1);
 
 		glutDisplayFunc(display_CB);
 		glutKeyboardFunc(keyboard_CB);
