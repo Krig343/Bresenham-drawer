@@ -56,9 +56,13 @@ void I_draw(Image *img);
 
 polygone *P_nouveau();
 void P_nouveauSommet(polygone *p, int x, int y);
+void P_draw(Image *img, polygone *p);
+void P_fill(Image *img, polygone *p);
 
 void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *xB_1o, int *yB_1o);
 void FromFirstOctan(int xA, int yA, int xB, int yB, int x_1o, int y_1o, int *x, int *y);
 void I_bresenham(Image *img, int xA, int yA, int xB, int yB);
+
+void Close(Image *img, polygone *p);
 
 #endif

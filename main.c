@@ -18,7 +18,8 @@
 
 Image *img;
 polygone *p;
-int ouvert;
+int closed;
+int full;
 
 //------------------------------------------------------------------
 //	C'est le display callback. A chaque fois qu'il faut
@@ -30,17 +31,8 @@ int ouvert;
 void display_CB()
 {
 	Color white = C_new(255, 255, 255);
-	img->_current_color = white;
-	int i;
-	for (i = p->drawn_sommets; i < p->nb_sommets - 1; i++)
-	{
-		int xA = p->sommets[i].x;
-		int yA = p->sommets[i].y;
-		int xB = p->sommets[i + 1].x;
-		int yB = p->sommets[i + 1].y;
-		I_bresenham(img, xA, yA, xB, yB);
-		p->drawn_sommets++;
-	}
+	I_changeColor(img, white);
+	P_draw(img, p);
 	I_draw(img);
 
 	glutSwapBuffers();
@@ -85,29 +77,44 @@ void keyboard_CB(unsigned char key, int x, int y)
 		I_zoomInit(img);
 		break;
 	case 'c':
-		if (ouvert)
+		if (closed)
 		{
-			ouvert = 0;
+			closed = 0;
 			Color black = C_new(0, 0, 0);
-			img->_current_color = black;
-			int i = p->drawn_sommets;
-			int xA = p->sommets[i].x;
-			int yA = p->sommets[i].y;
-			int xB = p->sommets[0].x;
-			int yB = p->sommets[0].y;
-			I_bresenham(img, xA, yA, xB, yB);
+			I_changeColor(img, black);
+			Close(img, p);
+			Color white = C_new(255, 255, 255);
+			I_changeColor(img, white);
+			p->drawn_sommets = 0;
+			P_draw(img, p);
 		}
 		else
 		{
-			ouvert = 1;
+			closed = 1;
 			Color white = C_new(255, 255, 255);
-			img->_current_color = white;
-			int i = p->drawn_sommets;
-			int xA = p->sommets[i].x;
-			int yA = p->sommets[i].y;
-			int xB = p->sommets[0].x;
-			int yB = p->sommets[0].y;
-			I_bresenham(img, xA, yA, xB, yB);
+			I_changeColor(img, white);
+			Close(img, p);
+		}
+		break;
+	case 'f':
+		if (full)
+		{
+			full = 0;
+			closed = 0;
+			Color black = C_new(0, 0, 0);
+			I_fill(img, black);
+			Color white = C_new(255, 255, 255);
+			I_changeColor(img, white);
+			p->drawn_sommets = 0;
+			// P_draw(img, p);
+		}
+		else
+		{
+			full = 1;
+			Color white = C_new(255, 255, 255);
+			I_changeColor(img, white);
+			Close(img, p);
+			P_fill(img, p);
 		}
 		break;
 	default:
@@ -177,7 +184,8 @@ int main(int argc, char **argv)
 		}
 		int windowPosX = 100, windowPosY = 100;
 		p = P_nouveau();
-		ouvert = 0;
+		closed = 0;
+		full = 0;
 
 		glutInitWindowSize(largeur, hauteur);
 		glutInitWindowPosition(windowPosX, windowPosY);

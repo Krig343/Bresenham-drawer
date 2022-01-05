@@ -272,6 +272,111 @@ void P_nouveauSommet(polygone *p, int x, int y)
 	p->nb_sommets++;
 }
 
+void P_draw(Image *img, polygone *p)
+{
+	int i;
+	for (i = p->drawn_sommets; i < p->nb_sommets - 1; i++)
+	{
+		int xA = p->sommets[i].x;
+		int yA = p->sommets[i].y;
+		int xB = p->sommets[i + 1].x;
+		int yB = p->sommets[i + 1].y;
+		I_bresenham(img, xA, yA, xB, yB);
+		p->drawn_sommets++;
+	}
+}
+
+int TestColor(Color c1, Color c2)
+{
+	if ((c1._red == c2._red) && (c1._green == c2._green) && (c1._blue == c2._blue))
+		return 1;
+	return 0;
+}
+
+void FindYMaxima(Image *img, int *ymin, int *ymax)
+{
+	Color white = C_new(255, 255, 255);
+	int max = 0;
+	int min = img->_height;
+	int i;
+	int j = 0;
+	while (min == img->_height)
+	{
+		i = 0;
+		while (min == img->_height && i < img->_width)
+		{
+			Color cur_pixel = img->_buffer[i][j];
+			if (TestColor(cur_pixel, white))
+				min = j;
+			else
+				i++;
+		}
+		j++;
+	}
+	j = img->_height;
+	while (max == 0)
+	{
+		i = 0;
+		while (max == 0 && i < img->_width)
+		{
+			Color cur_pixel = img->_buffer[i][j];
+			if (TestColor(cur_pixel, white))
+				max = j;
+			else
+				i++;
+		}
+		j--;
+	}
+	*ymin = min;
+	*ymax = max;
+}
+
+// int IsVertex(polygone *p, int x, int y)
+// {
+// 	int i;
+// 	for (i = 0; i < p->nb_sommets; i++)
+// 		if ((p->sommets[i].x == x) && (p->sommets[i].y == y))
+// 			return 1;
+// 	return 0;
+// }
+
+void P_fill(Image *img, polygone *p)
+{
+	int ymin, ymax, i, j, k;
+	Color white = C_new(255, 255, 255);
+	Color black = C_new(0, 0, 0);
+	Color latest_color = black;
+	FindYMaxima(img, &ymin, &ymax);
+	for (j = ymin; j < ymax; j++)
+	{
+		point intersection[img->_width];
+		int compteur = 0;
+		for (i = 0; i < img->_width; i++)
+		{
+			Color cur_pixel = img->_buffer[i][j];
+			if (!TestColor(cur_pixel, latest_color) && TestColor(cur_pixel, white))
+			{
+				// if (!IsVertex(p, i, j))
+				// {
+				intersection[compteur].x = i;
+				compteur++;
+				latest_color = cur_pixel;
+				// }
+			}
+			else
+			{
+				if (!TestColor(cur_pixel, latest_color) && TestColor(cur_pixel, black))
+					latest_color = cur_pixel;
+			}
+		}
+		for (i = 0; i < compteur - 1; i += 2)
+		{
+			for (k = intersection[i].x; k < intersection[i + 1].x; k++)
+				I_plotColor(img, k, j, white);
+		}
+	}
+}
+
 void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *xB_1o, int *yB_1o)
 {
 	int xA_1q, yA_1q, xB_1q, yB_1q;
@@ -358,4 +463,14 @@ void I_bresenham(Image *img, int xA, int yA, int xB, int yB)
 			j++;
 		}
 	}
+}
+
+void Close(Image *img, polygone *p)
+{
+	int i = p->drawn_sommets;
+	int xA = p->sommets[i].x;
+	int yA = p->sommets[i].y;
+	int xB = p->sommets[0].x;
+	int yB = p->sommets[0].y;
+	I_bresenham(img, xA, yA, xB, yB);
 }
