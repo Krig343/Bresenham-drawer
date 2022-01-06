@@ -37,15 +37,14 @@ int longueur(polygone *p)
 
 int IsVertex(polygone *p, int x, int y)
 {
-    if (vide(p))
-        return 0;
-    else
+    if (!vide(p))
     {
         if (p->sommet.x == x && p->sommet.y == y)
             return 1;
         else
             IsVertex(p->suivant, x, y);
     }
+    return 0;
 }
 
 point tete(polygone *p)

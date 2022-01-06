@@ -1,15 +1,3 @@
-
-/*===============================================================*\
-
-	Arash Habibi
-
-	main.c
-
-	Un programme equivalent à 02_glut.c et qui ne prend en compte
-	que trois événements pour quitter le programme.
-
-\*===============================================================*/
-
 #include <stdio.h>
 #include <GL/glut.h>
 #include <GL/gl.h>
@@ -162,7 +150,6 @@ void mouse_CB(int button, int state, int x, int y)
 
 void keyboard_CB(unsigned char key, int x, int y)
 {
-	// fprintf(stderr,"key=%d\n",key);
 	switch (key)
 	{
 	case 27:
@@ -360,29 +347,21 @@ void special_CB(int key, int x, int y)
 
 int main(int argc, char **argv)
 {
-	if ((argc != 3) && (argc != 2))
+	if (argc != 3)
 	{
-		fprintf(stderr, "\n\nUsage \t: %s <width> <height>\nou", argv[0]);
-		fprintf(stderr, "\t: %s <ppmfilename> \n\n", argv[0]);
+		fprintf(stderr, "Usage : %s <width> <height>\n", argv[0]);
 		exit(1);
 	}
 	else
 	{
 		int largeur, hauteur;
-		if (argc == 2)
-		{
-			img = I_read(argv[1]);
-			largeur = img->_width;
-			hauteur = img->_height;
-		}
-		else
-		{
-			largeur = atoi(argv[1]);
-			hauteur = atoi(argv[2]);
-			img = I_new(largeur, hauteur);
-			Color noir = C_new(0, 0, 0);
-			I_fill(img, noir);
-		}
+
+		largeur = atoi(argv[1]);
+		hauteur = atoi(argv[2]);
+		img = I_new(largeur, hauteur);
+		Color noir = C_new(0, 0, 0);
+		I_fill(img, noir);
+
 		int windowPosX = 100, windowPosY = 100;
 		p = P_nouveau();
 		closed = 0;
@@ -411,8 +390,6 @@ int main(int argc, char **argv)
 		glutKeyboardFunc(keyboard_CB);
 		glutSpecialFunc(special_CB);
 		glutMouseFunc(mouse_CB);
-		// glutMotionFunc(mouse_move_CB);
-		// glutPassiveMotionFunc(passive_mouse_move_CB);
 
 		glutMainLoop();
 
