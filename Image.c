@@ -255,34 +255,19 @@ void I_draw(Image *img)
 	glEnd();
 }
 
-polygone *P_nouveau()
-{
-	polygone *p = (polygone *)malloc(sizeof(polygone));
-	p->nb_sommets = 0;
-	p->drawn_sommets = 0;
-	return p;
-}
-
-void P_nouveauSommet(polygone *p, int x, int y)
-{
-	point pt;
-	pt.x = x;
-	pt.y = y;
-	p->sommets[p->nb_sommets] = pt;
-	p->nb_sommets++;
-}
-
 void P_draw(Image *img, polygone *p)
 {
-	int i;
-	for (i = p->drawn_sommets; i < p->nb_sommets - 1; i++)
+	if (longueur(p) > 1)
 	{
-		int xA = p->sommets[i].x;
-		int yA = p->sommets[i].y;
-		int xB = p->sommets[i + 1].x;
-		int yB = p->sommets[i + 1].y;
-		I_bresenham(img, xA, yA, xB, yB);
-		p->drawn_sommets++;
+		while (p->suivant != NULL)
+		{
+			int xA = p->sommet.x;
+			int yA = p->sommet.y;
+			p = p->suivant;
+			int xB = p->sommet.x;
+			int yB = p->sommet.y;
+			I_bresenham(img, xA, yA, xB, yB);
+		}
 	}
 }
 
@@ -331,15 +316,6 @@ void FindYMaxima(Image *img, int *ymin, int *ymax)
 	*ymax = max;
 }
 
-// int IsVertex(polygone *p, int x, int y)
-// {
-// 	int i;
-// 	for (i = 0; i < p->nb_sommets; i++)
-// 		if ((p->sommets[i].x == x) && (p->sommets[i].y == y))
-// 			return 1;
-// 	return 0;
-// }
-
 void P_fill(Image *img, polygone *p)
 {
 	int ymin, ymax, i, j, k;
@@ -351,17 +327,25 @@ void P_fill(Image *img, polygone *p)
 	{
 		point intersection[img->_width];
 		int compteur = 0;
+		int first = 1;
 		for (i = 0; i < img->_width; i++)
 		{
 			Color cur_pixel = img->_buffer[i][j];
 			if (!TestColor(cur_pixel, latest_color) && TestColor(cur_pixel, white))
 			{
-				// if (!IsVertex(p, i, j))
-				// {
-				intersection[compteur].x = i;
-				compteur++;
-				latest_color = cur_pixel;
-				// }
+				if (first)
+				{
+					first = 0;
+					intersection[compteur].x = i;
+					compteur++;
+					latest_color = cur_pixel;
+				}
+				else if (!IsVertex(p, i, j))
+				{
+					intersection[compteur].x = i;
+					compteur++;
+					latest_color = cur_pixel;
+				}
 			}
 			else
 			{
@@ -467,10 +451,12 @@ void I_bresenham(Image *img, int xA, int yA, int xB, int yB)
 
 void Close(Image *img, polygone *p)
 {
-	int i = p->drawn_sommets;
-	int xA = p->sommets[i].x;
-	int yA = p->sommets[i].y;
-	int xB = p->sommets[0].x;
-	int yB = p->sommets[0].y;
+	P_draw(img, p);
+	point fin = queue(p);
+	int xA = fin.x;
+	int yA = fin.y;
+	point depart = tete(p);
+	int xB = depart.x;
+	int yB = depart.y;
 	I_bresenham(img, xA, yA, xB, yB);
 }

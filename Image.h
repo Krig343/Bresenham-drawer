@@ -6,23 +6,12 @@
 #include <GL/gl.h>
 
 #include "Ppm.h"
+#include "polygone.h"
 
 typedef struct
 {
 	float _red, _green, _blue;
 } Color;
-
-typedef struct
-{
-	int x, y;
-} point;
-
-typedef struct
-{
-	int nb_sommets;
-	int drawn_sommets;
-	point sommets[100];
-} polygone;
 
 Color C_new(float red, float green, float blue);
 void C_check(Color c, char *message);
@@ -54,10 +43,10 @@ void I_move(Image *img, int x, int y);
 
 void I_draw(Image *img);
 
-polygone *P_nouveau();
-void P_nouveauSommet(polygone *p, int x, int y);
 void P_draw(Image *img, polygone *p);
 void P_fill(Image *img, polygone *p);
+
+void FindYMaxima(Image *img, int *ymin, int *ymax);
 
 void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *xB_1o, int *yB_1o);
 void FromFirstOctan(int xA, int yA, int xB, int yB, int x_1o, int y_1o, int *x, int *y);

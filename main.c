@@ -49,7 +49,7 @@ void mouse_CB(int button, int state, int x, int y)
 	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 	{
 		I_focusPoint(img, x, img->_height - y);
-		P_nouveauSommet(p, x, y);
+		p = P_nouveauSommet(p, x, y);
 	}
 	glutPostRedisplay();
 }
@@ -85,7 +85,6 @@ void keyboard_CB(unsigned char key, int x, int y)
 			Close(img, p);
 			Color white = C_new(255, 255, 255);
 			I_changeColor(img, white);
-			p->drawn_sommets = 0;
 			P_draw(img, p);
 		}
 		else
@@ -103,9 +102,8 @@ void keyboard_CB(unsigned char key, int x, int y)
 			closed = 0;
 			Color black = C_new(0, 0, 0);
 			I_fill(img, black);
-			Color white = C_new(255, 255, 255);
-			I_changeColor(img, white);
-			p->drawn_sommets = 0;
+			// Color white = C_new(255, 255, 255);
+			// I_changeColor(img, white);
 			// P_draw(img, p);
 		}
 		else
