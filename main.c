@@ -22,6 +22,7 @@ int closed;
 int full;
 int mode;
 int selected_vertex;
+int selected_edge;
 
 //------------------------------------------------------------------
 //	C'est le display callback. A chaque fois qu'il faut
@@ -60,8 +61,14 @@ void display_CB()
 		break;
 	}
 	case 3:
-		/* code */
+	{
+		point fin = ieme(p, selected_edge + 1);
+		point depart = ieme(p, selected_edge);
+		Color sky_blue = C_new(0, 0, 255);
+		I_changeColor(img, sky_blue);
+		Close(img, p, depart, fin);
 		break;
+	}
 	default:
 		break;
 	}
@@ -78,17 +85,31 @@ void display_CB()
 
 void mouse_CB(int button, int state, int x, int y)
 {
-	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+	switch (mode)
 	{
-		I_focusPoint(img, x, img->_height - y);
-		if (mode == 1)
+	case 1:
+		if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 		{
+			I_focusPoint(img, x, img->_height - y);
 			if (vide(p))
 				selected_vertex = 0;
 			else
 				selected_vertex++;
+			if (longueur(p) == 1)
+				selected_edge = 0;
+			else
+				selected_edge++;
 			p = P_nouveauSommet(p, x, y);
 		}
+		break;
+	case 3:
+		if ((button == GLUT_MIDDLE_BUTTON) && (state == GLUT_DOWN))
+		{
+			I_focusPoint(img, x, img->_height - y);
+			p = P_addi(p, selected_edge + 1, x, y);
+			selected_vertex++;
+		}
+		break;
 	}
 	glutPostRedisplay();
 }
@@ -176,11 +197,16 @@ void keyboard_CB(unsigned char key, int x, int y)
 		}
 		else
 		{
-			mode = 3;
-			printf("--------------------\n");
-			printf("Mode append désactivé\n");
-			printf("Mode vertex désactivé\n");
-			printf("Mode edge activé\n");
+			if (selected_edge != -1)
+			{
+				mode = 3;
+				printf("--------------------\n");
+				printf("Mode append désactivé\n");
+				printf("Mode vertex désactivé\n");
+				printf("Mode edge activé\n");
+			}
+			else
+				printf("Aucune arrête dans le polynome. Mode edge indisponible\n");
 		}
 		break;
 	case 127:
@@ -212,8 +238,9 @@ void special_CB(int key, int x, int y)
 
 	int d = 10;
 
-	if (mode == 2)
+	switch (mode)
 	{
+	case 2:
 		switch (key)
 		{
 		case GLUT_KEY_UP:
@@ -237,9 +264,21 @@ void special_CB(int key, int x, int y)
 		default:
 			fprintf(stderr, "special_CB : %d : unknown key.\n", key);
 		}
-	}
-	else
-	{
+		break;
+	case 3:
+		switch (key)
+		{
+		case 104:
+			selected_edge = (selected_edge + 1) % (longueur(p) - 1);
+			break;
+		case 105:
+			selected_edge = (selected_edge - 2 + longueur(p)) % (longueur(p) - 1);
+			break;
+		default:
+			fprintf(stderr, "special_CB : %d : unknown key.\n", key);
+		}
+		break;
+	default:
 		switch (key)
 		{
 		case GLUT_KEY_UP:
@@ -257,6 +296,7 @@ void special_CB(int key, int x, int y)
 		default:
 			fprintf(stderr, "special_CB : %d : unknown key.\n", key);
 		}
+		break;
 	}
 	glutPostRedisplay();
 }
@@ -294,6 +334,7 @@ int main(int argc, char **argv)
 		full = 0;
 		mode = 1;
 		selected_vertex = -1;
+		selected_edge = -1;
 
 		glutInitWindowSize(largeur, hauteur);
 		glutInitWindowPosition(windowPosX, windowPosY);

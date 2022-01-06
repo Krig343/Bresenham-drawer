@@ -37,6 +37,6 @@ polygone *suppi(polygone *p, int i);
 
 polygone *moveVertex(polygone *p, int i, int dx, int dy);
 
-polygone *addi(polygone *p, int i, int x, int y);
+polygone *P_addi(polygone *p, int i, int x, int y);
 
 #endif

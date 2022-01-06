@@ -111,7 +111,7 @@ polygone *moveVertex(polygone *p, int i, int dx, int dy)
     return p;
 }
 
-polygone *addi(polygone *p, int i, int x, int y)
+polygone *P_addi(polygone *p, int i, int x, int y)
 {
     if (i == 0)
         P_nouveauSommet(p, x, y);
@@ -126,7 +126,5 @@ polygone *addi(polygone *p, int i, int x, int y)
     p1 = P_nouveauSommet(p1, x, y);
     p1->precedent = p2;
     p2->suivant = p1;
-    free(p1);
-    free(p2);
     return p;
 }
