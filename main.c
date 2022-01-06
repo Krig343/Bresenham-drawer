@@ -20,6 +20,8 @@ Image *img;
 polygone *p;
 int closed;
 int full;
+int mode;
+int selected_vertex;
 
 //------------------------------------------------------------------
 //	C'est le display callback. A chaque fois qu'il faut
@@ -30,9 +32,39 @@ int full;
 
 void display_CB()
 {
-	Color white = C_new(255, 255, 255);
-	I_changeColor(img, white);
-	P_draw(img, p);
+	I_reset(img, p);
+	if (closed)
+	{
+		point fin = queue(p);
+		point depart = tete(p);
+		Color white = C_new(255, 255, 255);
+		I_changeColor(img, white);
+		Close(img, p, depart, fin);
+	}
+	if (full)
+	{
+		point fin = queue(p);
+		point depart = tete(p);
+		Color white = C_new(255, 255, 255);
+		I_changeColor(img, white);
+		Close(img, p, depart, fin);
+		P_fill(img, p);
+	}
+	switch (mode)
+	{
+	case 2:
+	{
+		Color red = C_new(255, 0, 0);
+		I_changeColor(img, red);
+		I_drawCarre(img, p, selected_vertex);
+		break;
+	}
+	case 3:
+		/* code */
+		break;
+	default:
+		break;
+	}
 	I_draw(img);
 
 	glutSwapBuffers();
@@ -49,7 +81,14 @@ void mouse_CB(int button, int state, int x, int y)
 	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 	{
 		I_focusPoint(img, x, img->_height - y);
-		p = P_nouveauSommet(p, x, y);
+		if (mode == 1)
+		{
+			if (vide(p))
+				selected_vertex = 0;
+			else
+				selected_vertex++;
+			p = P_nouveauSommet(p, x, y);
+		}
 	}
 	glutPostRedisplay();
 }
@@ -73,46 +112,87 @@ void keyboard_CB(unsigned char key, int x, int y)
 	case 's':
 		I_zoom(img, 0.5);
 		break;
-	case 'i':
+	case 'r':
 		I_zoomInit(img);
 		break;
 	case 'c':
 		if (closed)
-		{
 			closed = 0;
-			Color black = C_new(0, 0, 0);
-			I_changeColor(img, black);
-			Close(img, p);
-			Color white = C_new(255, 255, 255);
-			I_changeColor(img, white);
-			P_draw(img, p);
-		}
 		else
-		{
 			closed = 1;
-			Color white = C_new(255, 255, 255);
-			I_changeColor(img, white);
-			Close(img, p);
-		}
 		break;
 	case 'f':
 		if (full)
-		{
 			full = 0;
-			closed = 0;
-			Color black = C_new(0, 0, 0);
-			I_fill(img, black);
-			// Color white = C_new(255, 255, 255);
-			// I_changeColor(img, white);
-			// P_draw(img, p);
+		else
+			full = 1;
+		break;
+	case 'i':
+		if (mode == 1)
+		{
+			mode = 0;
+			printf("--------------------\n");
+			printf("Mode append désactivé\n");
+			printf("Attention ! Aucun mode sélectionné\n");
 		}
 		else
 		{
-			full = 1;
-			Color white = C_new(255, 255, 255);
-			I_changeColor(img, white);
-			Close(img, p);
-			P_fill(img, p);
+			mode = 1;
+			printf("--------------------\n");
+			printf("Mode append activé\n");
+			printf("Mode vertex désactivé\n");
+			printf("Mode edge désactivé\n");
+		}
+		break;
+	case 'v':
+		if (mode == 2)
+		{
+			mode = 0;
+			printf("--------------------\n");
+			printf("Mode vertex désactivé\n");
+			printf("Attention ! Aucun mode sélectionné\n");
+		}
+		else
+		{
+			if (selected_vertex != -1)
+			{
+				mode = 2;
+				printf("--------------------\n");
+				printf("Mode append désactivé\n");
+				printf("Mode vertex activé\n");
+				printf("Mode edge désactivé\n");
+			}
+			else
+				printf("Aucun point dans le polynome. Mode vertex indisponible\n");
+		}
+		break;
+	case 'e':
+		if (mode == 3)
+		{
+			mode = 0;
+			printf("--------------------\n");
+			printf("Mode edge désactivé\n");
+			printf("Attention ! Aucun mode sélectionné\n");
+		}
+		else
+		{
+			mode = 3;
+			printf("--------------------\n");
+			printf("Mode append désactivé\n");
+			printf("Mode vertex désactivé\n");
+			printf("Mode edge activé\n");
+		}
+		break;
+	case 127:
+		if (mode == 2)
+		{
+			if (p->suivant != NULL)
+			{
+				p = suppi(p, selected_vertex);
+				selected_vertex--;
+			}
+			else
+				printf("Attention ! Le dernier point ne peut pas être supprimé\n");
 		}
 		break;
 	default:
@@ -129,26 +209,54 @@ void keyboard_CB(unsigned char key, int x, int y)
 
 void special_CB(int key, int x, int y)
 {
-	// int mod = glutGetModifiers();
 
 	int d = 10;
 
-	switch (key)
+	if (mode == 2)
 	{
-	case GLUT_KEY_UP:
-		I_move(img, 0, -d);
-		break;
-	case GLUT_KEY_DOWN:
-		I_move(img, 0, d);
-		break;
-	case GLUT_KEY_LEFT:
-		I_move(img, d, 0);
-		break;
-	case GLUT_KEY_RIGHT:
-		I_move(img, -d, 0);
-		break;
-	default:
-		fprintf(stderr, "special_CB : %d : unknown key.\n", key);
+		switch (key)
+		{
+		case GLUT_KEY_UP:
+			p = moveVertex(p, selected_vertex, 0, -d);
+			break;
+		case GLUT_KEY_DOWN:
+			p = moveVertex(p, selected_vertex, 0, d);
+			break;
+		case GLUT_KEY_LEFT:
+			p = moveVertex(p, selected_vertex, -d, 0);
+			break;
+		case GLUT_KEY_RIGHT:
+			p = moveVertex(p, selected_vertex, d, 0);
+			break;
+		case 104:
+			selected_vertex = (selected_vertex + 1) % longueur(p);
+			break;
+		case 105:
+			selected_vertex = (selected_vertex - 1 + longueur(p)) % longueur(p);
+			break;
+		default:
+			fprintf(stderr, "special_CB : %d : unknown key.\n", key);
+		}
+	}
+	else
+	{
+		switch (key)
+		{
+		case GLUT_KEY_UP:
+			I_move(img, 0, d);
+			break;
+		case GLUT_KEY_DOWN:
+			I_move(img, 0, -d);
+			break;
+		case GLUT_KEY_LEFT:
+			I_move(img, d, 0);
+			break;
+		case GLUT_KEY_RIGHT:
+			I_move(img, -d, 0);
+			break;
+		default:
+			fprintf(stderr, "special_CB : %d : unknown key.\n", key);
+		}
 	}
 	glutPostRedisplay();
 }
@@ -184,6 +292,8 @@ int main(int argc, char **argv)
 		p = P_nouveau();
 		closed = 0;
 		full = 0;
+		mode = 1;
+		selected_vertex = -1;
 
 		glutInitWindowSize(largeur, hauteur);
 		glutInitWindowPosition(windowPosX, windowPosY);

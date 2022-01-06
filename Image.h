@@ -52,6 +52,10 @@ void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *x
 void FromFirstOctan(int xA, int yA, int xB, int yB, int x_1o, int y_1o, int *x, int *y);
 void I_bresenham(Image *img, int xA, int yA, int xB, int yB);
 
-void Close(Image *img, polygone *p);
+void Close(Image *img, polygone *p, point depart, point fin);
+
+void I_drawCarre(Image *img, polygone *p, int selected);
+
+void I_reset(Image *img, polygone *p);
 
 #endif

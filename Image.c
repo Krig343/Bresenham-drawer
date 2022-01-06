@@ -449,14 +449,37 @@ void I_bresenham(Image *img, int xA, int yA, int xB, int yB)
 	}
 }
 
-void Close(Image *img, polygone *p)
+void Close(Image *img, polygone *p, point depart, point fin)
 {
-	P_draw(img, p);
-	point fin = queue(p);
 	int xA = fin.x;
 	int yA = fin.y;
-	point depart = tete(p);
 	int xB = depart.x;
 	int yB = depart.y;
 	I_bresenham(img, xA, yA, xB, yB);
+}
+
+void I_drawCarre(Image *img, polygone *p, int selected)
+{
+	point pt = ieme(p, selected);
+	Color c = img->_current_color;
+	int i, j;
+	for (i = pt.x - 4; i < pt.x + 4; i++)
+	{
+		for (j = pt.y - 4; j < pt.y + 4; j++)
+		{
+			if ((i >= 0) && (i < img->_width) &&
+				(j >= 0) && (j < img->_height))
+				I_plotColor(img, i, j, c);
+		}
+	}
+}
+
+void I_reset(Image *img, polygone *p)
+{
+	Color black = C_new(0, 0, 0);
+	I_changeColor(img, black);
+	I_fill(img, black);
+	Color white = C_new(255, 255, 255);
+	I_changeColor(img, white);
+	P_draw(img, p);
 }
