@@ -23,6 +23,7 @@ int full;
 int mode;
 int selected_vertex;
 int selected_edge;
+int clavier;
 
 //------------------------------------------------------------------
 //	C'est le display callback. A chaque fois qu'il faut
@@ -85,32 +86,72 @@ void display_CB()
 
 void mouse_CB(int button, int state, int x, int y)
 {
-	switch (mode)
-	{
-	case 1:
-		if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+	if (clavier)
+		switch (mode)
 		{
-			I_focusPoint(img, x, img->_height - y);
-			if (vide(p))
-				selected_vertex = 0;
-			else
+		case 1:
+			if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+			{
+				I_focusPoint(img, x, img->_height - y);
+				if (vide(p))
+					selected_vertex = 0;
+				else
+					selected_vertex++;
+				if (longueur(p) == 1)
+					selected_edge = 0;
+				else
+					selected_edge++;
+				p = P_nouveauSommet(p, x, y);
+			}
+			break;
+		case 3:
+			if ((button == GLUT_MIDDLE_BUTTON) && (state == GLUT_DOWN))
+			{
+				I_focusPoint(img, x, img->_height - y);
+				p = P_addi(p, selected_edge + 1, x, y);
 				selected_vertex++;
-			if (longueur(p) == 1)
-				selected_edge = 0;
-			else
-				selected_edge++;
-			p = P_nouveauSommet(p, x, y);
+			}
+			break;
 		}
-		break;
-	case 3:
-		if ((button == GLUT_MIDDLE_BUTTON) && (state == GLUT_DOWN))
+	else
+		switch (mode)
 		{
-			I_focusPoint(img, x, img->_height - y);
-			p = P_addi(p, selected_edge + 1, x, y);
-			selected_vertex++;
+		case 1:
+			if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+			{
+				I_focusPoint(img, x, img->_height - y);
+				if (vide(p))
+					selected_vertex = 0;
+				else
+					selected_vertex++;
+				if (longueur(p) == 1)
+					selected_edge = 0;
+				else
+					selected_edge++;
+				p = P_nouveauSommet(p, x, y);
+			}
+			break;
+		case 2:
+			if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+			{
+				I_focusPoint(img, x, img->_height - y);
+				selected_vertex = closestVertex(p, x, y);
+			}
+			break;
+		case 3:
+			if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+			{
+				I_focusPoint(img, x, img->_height - y);
+				selected_edge = closestEdge(p, x, y);
+			}
+			if ((button == GLUT_MIDDLE_BUTTON) && (state == GLUT_DOWN))
+			{
+				I_focusPoint(img, x, img->_height - y);
+				p = P_addi(p, selected_edge + 1, x, y);
+				selected_vertex++;
+			}
+			break;
 		}
-		break;
-	}
 	glutPostRedisplay();
 }
 
@@ -216,9 +257,22 @@ void keyboard_CB(unsigned char key, int x, int y)
 			{
 				p = suppi(p, selected_vertex);
 				selected_vertex--;
+				selected_edge--;
 			}
 			else
 				printf("Attention ! Le dernier point ne peut pas être supprimé\n");
+		}
+		break;
+	case 'p':
+		if (clavier)
+		{
+			printf("Passage en mode souris\n");
+			clavier = 0;
+		}
+		else
+		{
+			printf("Passage en mode clavier\n");
+			clavier = 1;
 		}
 		break;
 	default:
@@ -238,66 +292,67 @@ void special_CB(int key, int x, int y)
 
 	int d = 10;
 
-	switch (mode)
-	{
-	case 2:
-		switch (key)
+	if (clavier)
+		switch (mode)
 		{
-		case GLUT_KEY_UP:
-			p = moveVertex(p, selected_vertex, 0, -d);
+		case 2:
+			switch (key)
+			{
+			case GLUT_KEY_UP:
+				p = moveVertex(p, selected_vertex, 0, -d);
+				break;
+			case GLUT_KEY_DOWN:
+				p = moveVertex(p, selected_vertex, 0, d);
+				break;
+			case GLUT_KEY_LEFT:
+				p = moveVertex(p, selected_vertex, -d, 0);
+				break;
+			case GLUT_KEY_RIGHT:
+				p = moveVertex(p, selected_vertex, d, 0);
+				break;
+			case 104:
+				selected_vertex = (selected_vertex + 1) % longueur(p);
+				break;
+			case 105:
+				selected_vertex = (selected_vertex - 1 + longueur(p)) % longueur(p);
+				break;
+			default:
+				fprintf(stderr, "special_CB : %d : unknown key.\n", key);
+			}
 			break;
-		case GLUT_KEY_DOWN:
-			p = moveVertex(p, selected_vertex, 0, d);
-			break;
-		case GLUT_KEY_LEFT:
-			p = moveVertex(p, selected_vertex, -d, 0);
-			break;
-		case GLUT_KEY_RIGHT:
-			p = moveVertex(p, selected_vertex, d, 0);
-			break;
-		case 104:
-			selected_vertex = (selected_vertex + 1) % longueur(p);
-			break;
-		case 105:
-			selected_vertex = (selected_vertex - 1 + longueur(p)) % longueur(p);
+		case 3:
+			switch (key)
+			{
+			case 104:
+				selected_edge = (selected_edge + 1) % (longueur(p) - 1);
+				break;
+			case 105:
+				selected_edge = (selected_edge - 2 + longueur(p)) % (longueur(p) - 1);
+				break;
+			default:
+				fprintf(stderr, "special_CB : %d : unknown key.\n", key);
+			}
 			break;
 		default:
-			fprintf(stderr, "special_CB : %d : unknown key.\n", key);
+			switch (key)
+			{
+			case GLUT_KEY_UP:
+				I_move(img, 0, d);
+				break;
+			case GLUT_KEY_DOWN:
+				I_move(img, 0, -d);
+				break;
+			case GLUT_KEY_LEFT:
+				I_move(img, d, 0);
+				break;
+			case GLUT_KEY_RIGHT:
+				I_move(img, -d, 0);
+				break;
+			default:
+				fprintf(stderr, "special_CB : %d : unknown key.\n", key);
+			}
+			break;
 		}
-		break;
-	case 3:
-		switch (key)
-		{
-		case 104:
-			selected_edge = (selected_edge + 1) % (longueur(p) - 1);
-			break;
-		case 105:
-			selected_edge = (selected_edge - 2 + longueur(p)) % (longueur(p) - 1);
-			break;
-		default:
-			fprintf(stderr, "special_CB : %d : unknown key.\n", key);
-		}
-		break;
-	default:
-		switch (key)
-		{
-		case GLUT_KEY_UP:
-			I_move(img, 0, d);
-			break;
-		case GLUT_KEY_DOWN:
-			I_move(img, 0, -d);
-			break;
-		case GLUT_KEY_LEFT:
-			I_move(img, d, 0);
-			break;
-		case GLUT_KEY_RIGHT:
-			I_move(img, -d, 0);
-			break;
-		default:
-			fprintf(stderr, "special_CB : %d : unknown key.\n", key);
-		}
-		break;
-	}
 	glutPostRedisplay();
 }
 
@@ -335,6 +390,7 @@ int main(int argc, char **argv)
 		mode = 1;
 		selected_vertex = -1;
 		selected_edge = -1;
+		clavier = 0;
 
 		glutInitWindowSize(largeur, hauteur);
 		glutInitWindowPosition(windowPosX, windowPosY);

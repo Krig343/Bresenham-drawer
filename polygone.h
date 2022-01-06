@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/gl.h>
+#include <math.h>
 
 typedef struct
 {
@@ -38,5 +39,9 @@ polygone *suppi(polygone *p, int i);
 polygone *moveVertex(polygone *p, int i, int dx, int dy);
 
 polygone *P_addi(polygone *p, int i, int x, int y);
+
+int closestVertex(polygone *p, int x, int y);
+
+int closestEdge(polygone *p, int x, int y);
 
 #endif

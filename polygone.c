@@ -128,3 +128,54 @@ polygone *P_addi(polygone *p, int i, int x, int y)
     p2->suivant = p1;
     return p;
 }
+
+float distance(int xA, int yA, int xB, int yB)
+{
+    return sqrt(pow(xB - xA, 2) + pow(yB - yA, 2));
+}
+
+int closestVertex(polygone *p, int x, int y)
+{
+    int i = 0;
+    int compteur;
+    float d1 = distance(x, y, p->sommet.x, p->sommet.y);
+    float d2;
+    int l = longueur(p);
+    for (compteur = 1; compteur < l; compteur++)
+    {
+        p = p->suivant;
+        d2 = distance(x, y, p->sommet.x, p->sommet.y);
+        if (d2 < d1)
+        {
+            i = compteur;
+            d1 = d2;
+        }
+    }
+    return i;
+}
+
+int closestEdge(polygone *p, int x, int y)
+{
+    int iVertex = closestVertex(p, x, y);
+    if (iVertex == 0)
+        return iVertex;
+    if (iVertex == longueur(p) - 1)
+        return iVertex - 1;
+    point pt = ieme(p, iVertex);
+    point apres = ieme(p, iVertex + 1);
+    float a = distance(x, y, apres.x, apres.y);
+    float b = distance(x, y, pt.x, pt.y);
+    float c = distance(pt.x, pt.y, apres.x, apres.y);
+    float cosa = (pow(b, 2) + pow(c, 2) - pow(a, 2)) / (2 * b * c);
+    float angle1 = acos(cosa);
+
+    point avant = ieme(p, iVertex - 1);
+    a = distance(x, y, avant.x, avant.y);
+    c = distance(pt.x, pt.y, avant.x, avant.y);
+    cosa = (pow(b, 2) + pow(c, 2) - pow(a, 2)) / (2 * b * c);
+    float angle2 = acos(cosa);
+
+    if (angle1 < angle2)
+        return iVertex;
+    return iVertex - 1;
+}
