@@ -1,15 +1,15 @@
 # Obtention de l'image exemple :
 
-./plot 500 500
-5 clicks gauche pour dessiner grossièrement les traits.
-Touche e pour le passage en mode edge.
-Affiner les traits en ajoutant des sommets grâce au click milieu.
-Touche v pour le passage en mode vertex.
-Touche suppr et click gauche pour enlever les sommets mal placés.
-Touche p pour passer en mode clavier pour sélectionner précisément des sommets trop proches.
-Touche suppr et page suivante/précédente pour la correction.
-Touche c pour fermer le polygone.
-Touche f pour remplir.
+- ./plot 500 500
+- 5 clicks gauche pour dessiner grossièrement les traits.
+- Touche e pour le passage en mode edge.
+- Affiner les traits en ajoutant des sommets grâce au click milieu.
+- Touche v pour le passage en mode vertex.
+- Touche suppr et click gauche pour enlever les sommets mal placés.
+- Touche p pour passer en mode clavier pour sélectionner précisément des sommets trop proches.
+- Touche suppr et page suivante/précédente pour la correction.
+- Touche c pour fermer le polygone.
+- Touche f pour remplir.
 
 # Toutes les commandes :
 
