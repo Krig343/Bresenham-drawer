@@ -11,6 +11,21 @@
 - Touche c pour fermer le polygone.
 - Touche f pour remplir.
 
+# Choix d'implémentation
+
+* Un polynome est représenté par une liste doublement chaînée.
+* L'ajout d'un sommet se fait en tête de liste, cela implique que le dernier élément ajouté est toujous à l'indice 0.
+* Le remplissage par la méthode scan-line est fait par vérification de la conrrespondace avec dernière couleur rencontrée. Cela permet de ne pas tenir compte des pixels horizontaux de même couleur, car ils sont comptés comme un seul pixel. Les sommets ne sont pas ajoutés à la liste des points formant les couples d'extrémités, sauf s'ils ne sont pas des maximas locaux. Il arrive, dans certains cas, que le derniers pixel tracé avec l'algorithme de bresenham ne soit pas exactement sur les coordonnées du point. Cela entraine une erreur dans le remplissage.
+* Les commandes clavier ont été conservées après l'ajout des commandes souris pour plus de précision dans certains choix de sommet ou d'arrêtes.
+* Le calcul du sommet le plus proche se fait par simple comparaison de la distance entre les sommets et les coordonnées du pixel qui a été clické.
+* Le calcul de l'arrête la plus proche se fait à partir du sommet le plus proche. En effet, cinq distances sont calculées : 
+    - La distance entre le point clické (noté A) et le sommet le plus proche (noté B).
+    - La distance entre le point clické (noté A) et le point suivant le sommet le plus proche (noté C).
+    - La distance entre le point clické (noté A) et le point précédent le sommet le plus proche (noté D).
+    - La distance entre le sommet le plus proche (noté B) et son suivant (noté C).
+    - La distance entre le sommet le plus proche (noté B) et son précédent (noté D).
+    Ensuite les angles ABC et ABD sont calculés grâce à la règle de cosinus, et selon quel angle est le plus petit, l'indice de l'arrête est choisie.
+
 # Toutes les commandes :
 
 ## Gestion de l'executable :
@@ -23,50 +38,37 @@
 
 *./plot _width _height* créé une nouvelle image noire de taille **width**x**height**.
 
-Le programme dispose de deux modes principaux:
-
-- le mode clavier
-- le mode souris
-
-Par défaut le programme se lance en mode **souris**.
-
 ## Changement et fonctionnement des modes :
 
 ### Modes principaux :
 
-Pour basculer entre le mode **clavier** et le mode **souris**, pressez la touche : *p*.
-
-Le mode **souris** prend en compte les fonctionnalités de la sélection à la souris.
-Le mode **clavier** prend en compte les fonctionnalités de la sélection au clavier.
-
-### Modes secondaires :
-
-Les trois modes suivants ne peuvent être activés en même temps. En activer un, désactive automatique celui en cours d'utilisation. Cependant, tous les modes peuvent être désactivés. Cela permet, en mode **clavier** de bouger l'image avec les *touches directionnelles*.
+Les trois modes suivants ne peuvent être activés en même temps. En activer un, désactive automatique celui en cours d'utilisation. Cependant, tous les modes peuvent être désactivés.
 
 #### Mode append :
 
 Basculent on/off avec la touche : *i*.
 
 Ce mode ajoute des sommets à la suite de la ligne brisée avec un *click gauche*.
+Ce mode permet également de bouger l'image avec les *touches directionnelles*.
 
 #### Mode vertex :
 
 Basculement on/off avec la touche : *v*.
 
-Ce mode permet de séléctionner un sommet, soit avec un *click gauche* en mode **souris**, soit par parcours grâce à *page_up* et *page_down* en mode **clavier**.
-Ce mode permet également de bouger, en mode **clavier**, un sommet grâce aux *touches directionnelles*.
+Ce mode permet de séléctionner un sommet, soit avec un *click gauche*, soit par parcours grâce à *page_up* et *page_down*.
+Ce mode permet également de bouger un sommet grâce aux *touches directionnelles*.
 Enfin, ce mode permet de supprimer le sommet sélectionné grâce à la touche *suppr*.
 
 #### Mode edge :
 
 Basculement on/off avec la touche : *e*.
 
-Ce mode permet de séléctionner une arrête, soit avec un *click gauche* en mode **souris**, soit par parcours grâce à *page_up* et *page_down* en mode **clavier**.
+Ce mode permet de séléctionner une arrête, soit avec un *click gauche*, soit par parcours grâce à *page_up* et *page_down*.
 Ce mode permet également d'insérer un sommet entre les deux points reliés par l'arrête sélectionnée avec un *click milieu*.
 
-### Modes semi-permanents :
+### Modes secondaires :
 
-Les deux modes suivants peuvent être activés en même temps. Leurs activations est égalment compatible avec les trois modes secondaires cités ci-dessus.
+Les deux modes suivants peuvent être activés en même temps. Leurs activations est égalment compatible avec les trois modes principaux cités ci-dessus.
 
 #### Mode close :
 

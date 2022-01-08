@@ -65,16 +65,6 @@ static void _windowToImage(Image *img, int xwin, int ywin, int *ximg, int *yimg)
 	*yimg = img->_yoffset + img->_yzoom + (ywin - img->_yzoom) / img->_zoom;
 }
 
-// Changement de repère inverse
-/*
-static void _imageToWindow(Image *img, int ximg, int yimg, int *xwin, int *ywin)
-{
-
-	*xwin = img->_xoffset + img->_xzoom + (ximg-img->_xzoom-img->_xoffset) * img->_zoom;
-	*ywin = img->_yoffset + img->_yzoom + (yimg-img->_yzoom-img->_yoffset) * img->_zoom;
-}
-*/
-
 void I_focusPoint(Image *img, int xwin, int ywin)
 {
 	int dx = xwin - img->_xzoom;
@@ -126,9 +116,9 @@ void I_draw(Image *img)
 
 void P_draw(Image *img, polygone *p)
 {
-	if (longueur(p) > 1)
+	if (longueur(p) > 1) // On ne draw pas s'il n'y a qu'un seul point
 	{
-		while (p->suivant != NULL)
+		while (p->suivant != NULL) // Draw des sommet 2 par 2
 		{
 			int xA = p->sommet.x;
 			int yA = p->sommet.y;
@@ -140,6 +130,7 @@ void P_draw(Image *img, polygone *p)
 	}
 }
 
+// Test si deux couleurs sont identiques
 int TestColor(Color c1, Color c2)
 {
 	if ((c1._red == c2._red) && (c1._green == c2._green) && (c1._blue == c2._blue))
@@ -150,11 +141,18 @@ int TestColor(Color c1, Color c2)
 void FindYMaxima(Image *img, int *ymin, int *ymax)
 {
 	Color white = C_new(255, 255, 255);
+	// initialisation de tampon
 	int max = 0;
 	int min = img->_height;
+
 	int i;
 	int j = 0;
-	while (min == img->_height)
+	/* 	Test de couleur ligne après ligne jusqu'à ce que le min change.
+	*	C'est à dire jusqu'à ce qu'un pixel blanc soit rencontré.
+	*	En partant du bas, le premier pixel blanc rencontré est forcément
+	*	le minimum.
+	*/
+	while (min == img->_height && j != img->_height)
 	{
 		i = 0;
 		while (min == img->_height && i < img->_width)
@@ -168,7 +166,12 @@ void FindYMaxima(Image *img, int *ymin, int *ymax)
 		j++;
 	}
 	j = img->_height;
-	while (max == 0)
+	/* 	Test de couleur ligne après ligne jusqu'à ce que le max change.
+	*	C'est à dire jusqu'à ce qu'un pixel blanc soit rencontré.
+	*	En partant du haut, le premier pixel blanc rencontré est forcément
+	*	le maximum.
+	*/
+	while (max == 0 && j != 0)
 	{
 		i = 0;
 		while (max == 0 && i < img->_width)
@@ -190,19 +193,23 @@ void P_fill(Image *img, polygone *p)
 	int ymin, ymax, i, j, k;
 	Color white = C_new(255, 255, 255);
 	Color black = C_new(0, 0, 0);
-	Color latest_color = black;
-	FindYMaxima(img, &ymin, &ymax);
+	Color latest_color = black;		// Définie la couleur de base comme étant celle du fond
+	FindYMaxima(img, &ymin, &ymax); // Cherche la hauteur max et min du polygone
 	for (j = ymin; j < ymax; j++)
 	{
-		point intersection[img->_width];
-		int compteur = 0;
-		int first = 1;
+		point intersection[img->_width]; // Créé un tableau de point de la taille de la largeur de l'image
+		int compteur = 0;				 // Initialise le compteur de points retenus à 0
+		int first = 1;					 // Initialise le toggle du premier élément à 0
 		for (i = 0; i < img->_width; i++)
 		{
 			Color cur_pixel = img->_buffer[i][j];
+			/* Si le pixel courant n'a pas la même couleur que la couleur de base et qu'il est blanc 
+			 * alors, s'il n'est pas un sommet, on l'ajoute et on définie la couleur de base comme
+			 * étant celle du pixel.
+			 */
 			if (!TestColor(cur_pixel, latest_color) && TestColor(cur_pixel, white))
 			{
-				if (first)
+				if (first) // Permet d'ajouter les sommets qui ne sont pas des maxima locaux
 				{
 					first = 0;
 					intersection[compteur].x = i;
@@ -218,10 +225,15 @@ void P_fill(Image *img, polygone *p)
 			}
 			else
 			{
+				/* Si le pixel courant n'a pas la même couleur que la couleur de base et qu'il est noir
+				 * alors la couleur de base devient le noir. Cela signifie que l'on a quitté le point
+				 * our l'arrête du polygone pour repasser sur le fond.
+				 */
 				if (!TestColor(cur_pixel, latest_color) && TestColor(cur_pixel, black))
 					latest_color = cur_pixel;
 			}
 		}
+		// Pour tous les points entre deux coordonnées succesives du tableau, on ajoute les points à dessiner
 		for (i = 0; i < compteur - 1; i += 2)
 		{
 			for (k = intersection[i].x; k < intersection[i + 1].x; k++)
@@ -230,6 +242,7 @@ void P_fill(Image *img, polygone *p)
 	}
 }
 
+// Algorithme vu en TD
 void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *xB_1o, int *yB_1o)
 {
 	int xA_1q, yA_1q, xB_1q, yB_1q;
@@ -269,6 +282,7 @@ void ToFirstOctan(int xA, int yA, int xB, int yB, int *xA_1o, int *yA_1o, int *x
 	}
 }
 
+// Algorithme vu en TD
 void FromFirstOctan(int xA, int yA, int xB, int yB, int x_1o, int y_1o, int *x, int *y)
 {
 	int x_1q, y_1q;
@@ -292,6 +306,7 @@ void FromFirstOctan(int xA, int yA, int xB, int yB, int x_1o, int y_1o, int *x, 
 		*y = -y_1q;
 }
 
+// Algorithme vu en TD
 void I_bresenham(Image *img, int xA, int yA, int xB, int yB)
 {
 	Color c = img->_current_color;
@@ -318,6 +333,7 @@ void I_bresenham(Image *img, int xA, int yA, int xB, int yB)
 	}
 }
 
+// Il s'agit d'un P_draw particulier qui ne dessine qu'un seul trait allant de fin à depart
 void Close(Image *img, polygone *p, point depart, point fin)
 {
 	int xA = fin.x;
@@ -329,9 +345,10 @@ void Close(Image *img, polygone *p, point depart, point fin)
 
 void I_drawCarre(Image *img, polygone *p, int selected)
 {
-	point pt = ieme(p, selected);
+	point pt = ieme(p, selected); // Coordonnées du point sélectionné
 	Color c = img->_current_color;
 	int i, j;
+	// Si les contours du carrés sont dans l'image, dessine un carré de 81x81 px autour du point
 	for (i = pt.x - 4; i < pt.x + 4; i++)
 	{
 		for (j = pt.y - 4; j < pt.y + 4; j++)
@@ -347,8 +364,8 @@ void I_reset(Image *img, polygone *p)
 {
 	Color black = C_new(0, 0, 0);
 	I_changeColor(img, black);
-	I_fill(img, black);
+	I_fill(img, black); // Rempli l'image de noir
 	Color white = C_new(255, 255, 255);
 	I_changeColor(img, white);
-	P_draw(img, p);
+	P_draw(img, p); // Dessine le polygone
 }
