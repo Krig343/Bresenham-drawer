@@ -24,7 +24,7 @@
     - La distance entre le point clické (noté A) et le point précédent le sommet le plus proche (noté D).
     - La distance entre le sommet le plus proche (noté B) et son suivant (noté C).
     - La distance entre le sommet le plus proche (noté B) et son précédent (noté D).
-    Ensuite les angles ABC et ABD sont calculés grâce à la règle de cosinus, et selon quel angle est le plus petit, l'indice de l'arrête est choisie.
+Ensuite les angles ABC et ABD sont calculés grâce à la règle de cosinus, et selon quel angle est le plus petit, l'indice de l'arrête est choisie. Du fait que la sélection se fait grâce au sommet le plus proche, il se peut que, dans le cas où un sommet n'appartenant pas à l'arrête la plus proche soit le sommet le plus proche, cela fausse tout le calcul et donc l'affichage. Je n'ai pas tenu compte de ce problème, car il était stipulé dans le sujet qu'il fallait partir du plus proche voisin et, car je n'ai pas trouvé de méthode adéquate pour palier ce problème.
 
 # Toutes les commandes :
 
